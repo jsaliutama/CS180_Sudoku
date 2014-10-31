@@ -1,5 +1,3 @@
-import java.util.Scanner;
-
 public class Sudoku {
     private int[][] board;
     public static final int SIZE_ROW = 9;
@@ -18,16 +16,16 @@ public class Sudoku {
     }
     
     public boolean[] candidates(int row, int column) {
-        boolean[] box = new boolean[10];
-        boolean[] row = new boolean[10];
-        boolean[] col = new boolean[10];
+        boolean[] boxArr = new boolean[10];
+        boolean[] rowArr = new boolean[10];
+        boolean[] colArr = new boolean[10];
         boolean[] total = new boolean[10];
-        box[0] = false;
-        row[0] = false;
-        col[0] = false;
+        boxArr[0] = false;
+        rowArr[0] = false;
+        colArr[0] = false;
         
-        int rowNum;
-        int colNum;
+        int rowNum = 0;
+        int colNum = 0;
         
         // Check box
         /*
@@ -48,41 +46,35 @@ public class Sudoku {
 
         for (int i = rowNum; i < (rowNum + 3); i++) {
             for (int j = colNum; j < (colNum + 3); j++) {
-                if (board[i][j] != null) {
-                    if (board[i][j] != 0) {
-                        box[board[i][j]] = false;
-                    } else {
-                        box[board[i][j]] = true;
-                    }
+                if (board[i][j] != 0) {
+                    boxArr[board[i][j]] = false;
+                } else {
+                    boxArr[board[i][j]] = true;
                 }
             }
         }
         
         //Check row
         for (int i = 0; i < SIZE_ROW; i++) {
-            if (board[i][column] != null) {
-                if (board[i][column] != 0) {
-                    row[board[i][column]] = false;
-                } else {
-                    row[board[i][column]] = true;
-                }
+            if (board[i][column] != 0) {
+                rowArr[board[i][column]] = false;
+            } else {
+                rowArr[board[i][column]] = true;
             }
         }
         
         //Check column
         for (int i = 0; i < SIZE_COLUMN; i++) {
-            if (board[row][i] != null) {
-                if (board[row][i] != 0) {
-                    row[board[row][i]] = false;
-                } else {
-                    row[board[row][i]] = true;
-                }
+            if (board[row][i] != 0) {
+                rowArr[board[row][i]] = false;
+            } else {
+                rowArr[board[row][i]] = true;
             }
         }
         
         // Compare total
         for (int i = 0; i < 10; i++) {
-            if (box[i] && row[i] && colummn[i]) {
+            if (boxArr[i] && rowArr[i] && colArr[i]) {
                 total[i] = true;
             } else {
                 total[i] = false;
@@ -112,7 +104,7 @@ public class Sudoku {
     public boolean nakedSingles() {
         boolean[] test;
         int count = 0;
-        int number;
+        int number = 0;
         boolean status = false;
         
         for (int i = 0; i < SIZE_ROW; i++) {
@@ -134,25 +126,100 @@ public class Sudoku {
     }
     
     public boolean hiddenSingles() {
+        boolean[] test;
+        //int counter;
+        int[] count = new int[10];
+        boolean status = false;
         
+        // Test row
+        for (int i = 0; i < SIZE_ROW; i++) {
+            for (int j = 0; j < SIZE_COLUMN; j++) {
+                // Test for one cell
+                test = candidates (i, j);
+                for (int k = 1; k < test.length; k++) {
+                    if (test[k] == true) {
+                        count[k]++;
+                    }
+                }
+            }
+            
+            // Apply the number 
+            for (int j = 0; j < SIZE_COLUMN; j++) {
+                test = candidates(i, j);
+                for (int k = 1; k < test.length; k++) {
+                    if (test[k] == true) {
+                        if (count[k] == 1) {
+                            board[i][j] = k;
+                            status = true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Test columns
+        for (int i = 0; i < SIZE_ROW; i++) {
+            for (int j = 0; j < SIZE_COLUMN; j++) {
+                // Test for one cell
+                test = candidates (j, i);
+                for (int k = 1; k < test.length; k++) {
+                    if (test[k] == true) {
+                        count[k]++;
+                    }
+                }
+            }
+            
+            // Apply the number 
+            for (int j = 0; j < SIZE_COLUMN; j++) {
+                test = candidates(j, i);
+                for (int k = 1; k < test.length; k++) {
+                    if (test[k] == true) {
+                        if (count[k] == 1) {
+                            board[i][j] = k;
+                            status = true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // Test box
+        
+        return status;
     }
     
-    /*
-    public void initializeFromCLI(String[] args) {
+    
+    public static int[][] initializeFromCLI(String args) {
         int k = 0;
-        int sudoku[][];
-        for (int i = 0; i < board.length; i++) {
-            for (int j = 0; j < board[i].length; j++) {
+        int sudoku[][] = new int[9][9];
+        for (int i = 0; i < sudoku.length; i++) {
+            for (int j = 0; j < sudoku[i].length; j++) {
                 sudoku[i][j] = args.charAt(k);
                 k++;
             }
         }
-        Sudoku(sudoku);
+        return sudoku;
     }
-    */
+
+    
+    public String getBoard() {
+        String s = "";
+        int[][] result = new int[9][9];
+        result = board();
+        for (int i = 0; i < result.length; i++) {
+            for (int j = 0; j < result[i].length; j++) {
+                s += result[i][j];
+            }
+        }
+        return s;
+    }
     
     public static void main(String[] args) {
-        int[][] board = parseString(args[0]);
+        //String s = "000041000060000200000000000320600000000050040700000000000200300480000000501000000";
+        //int[][] board = parseString(s);
+        int[][] board = initializeFromCLI(args[0]);
         Sudoku s = new Sudoku(board);
+        s.solve();
+        System.out.printf("%s\n", s.getBoard());
     }
 }
