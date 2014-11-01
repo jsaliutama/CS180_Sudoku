@@ -1,0 +1,23 @@
+//----->Note of result from WebCAT:
+
+Problem coverage: 71%
+
+For this assignment, the proportion of the problem that is covered by your test cases is being assessed by running a suite of reference tests against your solution, and comparing the results of the reference tests against the results produced by your tests.
+
+Differences in test results indicate that your code still contains bugs. Your code appears to cover only 71% of the behavior required for this assignment.
+
+Your test cases are not detecting these defects, so your testing is incomplete--covering at most only 71% of the required behavior, possibly even less.
+
+Double check that you have carefully followed all initial conditions requested in the assignment in setting up your solution, and that you have also met all requirements for a complete solution in the final state of your program.
+
+The following hint(s) may help you locate some ways in which your solution and your testing may be improved:
+
+testHiddenSingles(): (0,1) is wrong
+
+isSolved(): The puzzle is not solved, but should be.
+
+solve(): This simple puzzle should have been solved by the program.
+
+board(): A "copy" of the board should have been returned, not the original.
+
+Sudoku(int[][] board): The constructor did not copy the board
