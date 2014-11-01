@@ -2,6 +2,7 @@ import java.util.Arrays;
 
 public class Sudoku {
     private int[][] board;
+    private int[][] boardCopy;
     public static final int SIZE_ROW = 9;
     public static final int SIZE_COLUMN = 9;
     
@@ -12,13 +13,13 @@ public class Sudoku {
     
     //Status: working
     public Sudoku(int[][] board) {
-        this.board = board;
+        int[][] copy = board();
+        this.boardCopy = copy;
     }
     
     //Status: working
     public int[][] board() {
-        int[][] copy = board.clone();
-        return copy;
+        return this.board.clone();
     }
     
     //Status: working
@@ -38,69 +39,90 @@ public class Sudoku {
         
         int rowNum = 0;
         int colNum = 0;
-
-        // Check box. Index start from 1
-        if ((row + 1) % 3 == 2) {
-            rowNum = row - 1;
-        } else if ((row + 1) % 3 == 0) {
-            rowNum = row - 2;
-        } else {
-            rowNum = row;
-        }
         
-        if ((column + 1) % 3 == 2) {
-            colNum = column - 1;
-        } else if ((column + 1) % 3 == 0) {
-            colNum = column - 2;
-        } else {
-            colNum = column;
-        }
-          
-        for (int i = rowNum; i < (rowNum + 3); i++) {
-            for (int j = colNum; j < (colNum + 3); j++) {
-                if (copy[i][j] != 0) {
-                    boxArr[copy[i][j]] = false;
-                } 
+        //Only start checking if the checked value is zero (i.e. empty)
+        if (copy[row][column] == 0) {
+            // Check box. Index start from 1
+            if ((row + 1) % 3 == 2) {
+                rowNum = row - 1;
+            } else if ((row + 1) % 3 == 0) {
+                rowNum = row - 2;
+            } else {
+                rowNum = row;
             }
-        }
-
-        /*
-        // Check box. Index start from 0
-        rowNum = (row / 3) * 3;
-        colNum = (column / 3) * 3;
-        for (int i = rowNum; i < (rowNum + 3); i++) {
-            for (int j = colNum; j < (colNum + 3); j++) {
-                if (board[i][j] != 0) {
-                    boxArr[board[i][j]] = false;
-                } else {
-                    boxArr[board[i][j]] = true;
+            
+            if ((column + 1) % 3 == 2) {
+                colNum = column - 1;
+            } else if ((column + 1) % 3 == 0) {
+                colNum = column - 2;
+            } else {
+                colNum = column;
+            }
+            
+            for (int i = rowNum; i < (rowNum + 3); i++) {
+                for (int j = colNum; j < (colNum + 3); j++) {
+                    if (copy[i][j] != 0) {
+                        boxArr[copy[i][j]] = false;
+                    } 
                 }
             }
+            
+            
+            // Check row
+            for (int i = 0; i < SIZE_ROW; i++) {
+                if (copy[row][i] != 0) {
+                    rowArr[copy[row][i]] = false;
+                } 
+            }
+            
+            
+            // Check column
+            for (int i = 0; i < SIZE_COLUMN; i++) {
+                if (copy[i][column] != 0) {
+                    colArr[copy[i][column]] = false;
+                } 
+            }
+            
+            
+            // Compare total
+            for (int i = 0; i < 10; i++) {
+                if (boxArr[i] && rowArr[i] && colArr[i]) {
+                    total[i] = true;
+                } else {
+                    total[i] = false;
+                }
+            }
+        } 
+        
+        /*
+        //--->For diagosis purpose
+        // Check box diagnosis
+        System.out.println("boxArr: ");
+        for (int i = 0; i < boxArr.length; i++) {
+            System.out.println(i + " " + boxArr[i]);
+        }
+        System.out.println();
+        
+        // Check row diagnosis
+        System.out.println("rowArr: ");
+        for (int i = 0; i < rowArr.length; i++) {
+            System.out.println(i + " " + rowArr[i]);
+        }
+        System.out.println();
+        
+        // Check column diagnosis
+        System.out.println("colArr: ");
+        for (int i = 0; i < colArr.length; i++) {
+            System.out.println(i + " " + colArr[i]);
+        }
+        System.out.println();
+        
+        //Check total diagnosis
+        System.out.println("Result/total: ");
+        for (int i = 0; i < total.length; i++) {
+            System.out.println(i + " " + total[i]);
         }
         */
-        
-        // Check row
-        for (int i = 0; i < SIZE_ROW; i++) {
-            if (copy[row][i] != 0) {
-                rowArr[copy[row][i]] = false;
-            } 
-        }
-        
-        // Check column
-        for (int i = 0; i < SIZE_COLUMN; i++) {
-            if (copy[i][column] != 0) {
-                colArr[copy[i][column]] = false;
-            } 
-        }
-        
-        // Compare total
-        for (int i = 0; i < 10; i++) {
-            if (boxArr[i] && rowArr[i] && colArr[i]) {
-                total[i] = true;
-            } else {
-                total[i] = false;
-            }
-        }
         
         return total;
     }
@@ -119,8 +141,7 @@ public class Sudoku {
     
     //Status: working
     public void solve() {
-        while (!isSolved() && (nakedSingles() || hiddenSingles())) {
-        }
+        while (!isSolved() && (nakedSingles() || hiddenSingles()));
     }
     
     //Status: working
@@ -129,12 +150,13 @@ public class Sudoku {
         boolean[] test;
         int count;
         int number = 0;
-        boolean status = false;
+        boolean status = false;  //Goal: find as many naked singles as possible.
         
         for (int i = 0; i < SIZE_ROW; i++) {
             for (int j = 0; j < SIZE_COLUMN; j++) {
+                //Test naked singles if the designated cell is 0 (i.e. empty)
                 if (copy[i][j] == 0) {
-                    count = 0;
+                    count = 0;   // Fill/reset counter
                     test = candidates(i, j);
                     for (int k = 0; k < test.length; k++) {
                         if (test[k] == true) {
@@ -152,8 +174,149 @@ public class Sudoku {
         return status;
     }
     
+    //Status: not working
     public boolean hiddenSingles() {
+        boolean[][] boardStatus = new boolean[3][3];
+        int[][] copy = board();
+        boolean[] test;     //Stores the candidate value for the cell
+        int count = 0;
+        //boolean status = false;
+        //For checking box
+        int rowNum = 0;
+        int colNum = 0;
         
+        for (int i = 0; i < SIZE_ROW; i++) {
+            for (int j = 0; j < SIZE_COLUMN; j++) {
+                //Start test if the designated cell is 0 (i.e. empty)
+                if (copy[i][j] == 0) {
+                    //--->Trying to implement hatchet method to solve hidden singles.
+                    //Prepare candidates
+                    test = candidates(i, j);
+                    //Test for each number candidate
+                    for (int x = 0; x < test.length; x++) {
+                        if (test[x] == true) {
+                            // Fill/reset boardStatus array with 'true' value
+                            for (boolean[] value : boardStatus) {
+                                Arrays.fill(value, true);
+                            }
+                            for (int a = 0; a < 9; a++) {
+                                // Check row
+                                if (i % 3 == 0) {
+                                    if (copy[i+1][a] == x) { //|| candidates(i+1 , a)[x] == true) {
+                                        boardStatus[1][0] = false;
+                                        boardStatus[1][1] = false;
+                                        boardStatus[1][2] = false;
+                                    }
+                                    if (copy[i+2][a] == x) { //|| candidates(i+2 , a)[x] == true) {
+                                        boardStatus[2][0] = false;
+                                        boardStatus[2][1] = false;
+                                        boardStatus[2][2] = false;
+                                    }
+                                } else if (i % 3 == 1) {
+                                    if (copy[i-1][a] == x) { //|| candidates(i-1 , a)[x] == true) {
+                                        boardStatus[0][0] = false;
+                                        boardStatus[0][1] = false;
+                                        boardStatus[0][2] = false;
+                                    }
+                                    if (copy[i+1][a] == x) { //|| candidates(i+1 , a)[x] == true) {
+                                        boardStatus[2][0] = false;
+                                        boardStatus[2][1] = false;
+                                        boardStatus[2][2] = false;
+                                    }
+                                } else {
+                                    if (copy[i-2][a] == x) { //|| candidates(i-2 , a)[x] == true) {
+                                        boardStatus[0][0] = false;
+                                        boardStatus[0][1] = false;
+                                        boardStatus[0][2] = false;
+                                    }
+                                    if (copy[i-1][a] == x) { //|| candidates(i-1 , a)[x] == true) {
+                                        boardStatus[1][0] = false;
+                                        boardStatus[1][1] = false;
+                                        boardStatus[1][2] = false;
+                                    }
+                                }
+                                
+                                //Check column
+                                if (j % 3 == 0) {
+                                    if (copy[a][j+1] == x) { //|| candidates(a , j+1)[x] == true) {
+                                        boardStatus[0][1] = false;
+                                        boardStatus[1][1] = false;
+                                        boardStatus[2][1] = false;
+                                    }
+                                    if (copy[a][j+2] == x) { //|| candidates(a , j+2)[x] == true) {
+                                        boardStatus[0][2] = false;
+                                        boardStatus[1][2] = false;
+                                        boardStatus[2][2] = false;
+                                    }
+                                } else if (j % 3 == 1) {
+                                    if (copy[a][j-1] == x) { //|| candidates(a , j-1)[x] == true) {
+                                        boardStatus[0][0] = false;
+                                        boardStatus[1][0] = false;
+                                        boardStatus[2][0] = false;
+                                    }
+                                    if (copy[a][j+1] == x) { //|| candidates(a , j+1)[x] == true) {
+                                        boardStatus[0][2] = false;
+                                        boardStatus[1][2] = false;
+                                        boardStatus[2][2] = false;
+                                    }
+                                } else {
+                                    if (copy[a][j-2] == x) { //|| candidates(a , j-2)[x] == true) {
+                                        boardStatus[0][0] = false;
+                                        boardStatus[1][0] = false;
+                                        boardStatus[2][0] = false;
+                                    }
+                                    if (copy[a][j-1] == x) { //|| candidates(a , j-1)[x] == true) {
+                                        boardStatus[0][1] = false;
+                                        boardStatus[1][1] = false;
+                                        boardStatus[2][1] = false;
+                                    }
+                                }
+                                
+                                //Check box
+                                rowNum = i / 3 * 3;
+                                colNum = j / 3 * 3;
+                                for (int m = 0; m < 3; m++) {
+                                    for (int n = 0; n < 3; n++) {
+                                        if (copy[rowNum + m][colNum + n] != 0) {
+                                            boardStatus[m][n] = false;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            /*
+                            //---> For diagnostic purpose
+                            System.out.println("x = " + x);
+                            System.out.println("[i] = " + i + " [j] = " + j);
+                            for (int a = 0; a < 3; a++) {
+                                for (int b = 0; b < 3; b++) {
+                                    System.out.print(boardStatus[a][b] + " ");
+                                }
+                                System.out.println();
+                            }
+                            */
+                            
+                            //Check the status of statusBoard. Count the # of true
+                            count = 0;     // Reset counter.
+                            for (int row = 0; row < boardStatus.length; row++) {
+                                for (int col = 0; col < boardStatus[row].length; col++) {
+                                    if (boardStatus[row][col] == true) {
+                                        count++;
+                                    }
+                                }
+                            }
+                            //If found, implement number, but if the cell has a number already, don't implement.
+                            if (count == 1 && boardStatus[i % 3][j % 3] == true) {
+                                board[i][j] = x;
+                                return true;
+                            }
+                        } //End of test condition
+                    } // End of test 
+                }
+            } // End of j
+        } // End of i
+        return false;
+        //return status;
     }
     
     /*
@@ -353,17 +516,26 @@ public class Sudoku {
         //String s4 = "010900740000800003070320690004030200000602000008010300081070030300008000069003020";
         
         //Test strings for hidden singles
-        //String s5 = "";
-        //String s6 = "";
+        //String s5 = "028007000016083070000020851137290000000730000000046307290070000000860140000300700";
+        //String s6 = "002193000000007000700040019803000600045000230007000504370080006000600000000534100";
         
         Sudoku s = new Sudoku();
         int[][] board = initializeFromCLI(args[0]);
         s = new Sudoku(board);
         System.out.println("Original board");
         s.printBoard();
+        //s.candidates(7, 2);
+        //System.out.println(s.hiddenSingles());
+        
         s.solve();
         System.out.println();
-        System.out.println("Solved board");
+        if (s.isSolved()) {
+            System.out.println("Board is solved.");
+        } else {
+            System.out.println("Board is not solved.");
+        }
+        
+        System.out.println();
         s.printBoard();
     }
 }
