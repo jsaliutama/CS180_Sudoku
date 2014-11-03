@@ -1,16 +1,34 @@
+/**
+ * project4 - Sudoku.java
+ * 
+ * This program will solve an easy sudoku puzzle using only naked and hidden singles
+ * method. The program will receive input either from the Command Line Interface (CLI)
+ * or from a string defined within the main method. The print method for this puzzle is optional.
+ * 
+ * @authors Joshua Saliutama <jsaliuta@purdue.edu>
+ *          Kurt Sermersheim <ksermers@purdue.edu>
+ * 
+ * @date November 3, 2014
+ */
 import java.util.Arrays;
 
 public class Sudoku {
-    private int[][] board;
-    private int[][] boardCopy = new int[9][9];
-    private int[][] copy = new int[9][9];
+    private int[][] board;                        //Stores the original state of the board.
+    private int[][] boardCopy = new int[9][9];    //Stores the copy of the original board.
+    private int[][] copy = new int[9][9];         //Stores the copy of the copied board. Will be modified in final.
     public static final int SIZE_ROW = 9;
     public static final int SIZE_COLUMN = 9;
-
+    
+    /**
+     * Default constructor for Sudoku board. Returns an empty 9x9 board.
+     */
     public Sudoku() {
         this.board = new int[9][9];
     }
     
+    /**
+     * Sudoku constructor. Copies the sudoku board and put the copy in a new private variable.
+     */ 
     public Sudoku(int[][] board) {
         for (int i = 0; i < board.length; i++) {
             for (int j = 0; j < board[i].length; j++) {
@@ -19,6 +37,13 @@ public class Sudoku {
         }
     }
     
+    /**
+     * Returns the copy of the board. 
+     * 
+     * @param void
+     * 
+     * @return int[][]
+     */ 
     public int[][] board() {
         for (int i = 0; i < boardCopy.length; i++) {
             for (int j = 0; j < boardCopy[i].length; j++) {
@@ -28,12 +53,20 @@ public class Sudoku {
         return copy;
     }
     
+    /**
+     * This function will determine the number candidates of a specific cell in the sudoku board.
+     * 
+     * @param int row - stores the row coordinate for the checked cell (A = 0, B = 1, etc.).     
+     *        int column - stores the column coordinate for the checked cell.
+     */ 
     public boolean[] candidates(int row, int column) {
-        int[][] copy = board();
-        boolean[] boxArr = new boolean[10];
-        boolean[] rowArr = new boolean[10];
-        boolean[] colArr = new boolean[10];
-        boolean[] total = new boolean[10];
+        int[][] copy = board();                //Stores the copy of the board.
+        boolean[] boxArr = new boolean[10];    //Stores the candidates for a specific box.
+        boolean[] rowArr = new boolean[10];    //Stores the candidates for a specific row.
+        boolean[] colArr = new boolean[10];    //Stores the candidates for a specific column.
+        boolean[] total = new boolean[10];     //Stores the final candidate for a specific cell.
+        
+        //Initializing values.
         Arrays.fill(boxArr, true);
         Arrays.fill(rowArr, true);
         Arrays.fill(colArr, true);
@@ -45,9 +78,9 @@ public class Sudoku {
         int rowNum = 0;
         int colNum = 0;
         
-        //Only start checking if the checked value is zero (i.e. empty)
+        //Only start checking if the checked value is zero (i.e. empty).
         if (copy[row][column] == 0) {
-            // Check box. Index start from 1
+            // Check box. Index start from 1.
             if ((row + 1) % 3 == 2) {
                 rowNum = row - 1;
             } else if ((row + 1) % 3 == 0) {
@@ -73,7 +106,7 @@ public class Sudoku {
             }
             
             
-            // Check row
+            // Check row.
             for (int i = 0; i < SIZE_ROW; i++) {
                 if (copy[row][i] != 0) {
                     rowArr[copy[row][i]] = false;
@@ -81,7 +114,7 @@ public class Sudoku {
             }
             
             
-            // Check column
+            // Check column.
             for (int i = 0; i < SIZE_COLUMN; i++) {
                 if (copy[i][column] != 0) {
                     colArr[copy[i][column]] = false;
@@ -89,7 +122,7 @@ public class Sudoku {
             }
             
             
-            // Compare total
+            // Compare total.
             for (int i = 0; i < 10; i++) {
                 if (boxArr[i] && rowArr[i] && colArr[i]) {
                     total[i] = true;
@@ -99,7 +132,14 @@ public class Sudoku {
         return total;
     }
     
-    //Status: working
+    /**
+     * This function will determine whether the puzzle is solved or not by determining whether a zero (i.e. an
+     * empty cell) is present in the cell.
+     * 
+     * @param void
+     * 
+     * @return boolean
+     */ 
     public boolean isSolved() {
         for (int i = 0; i < SIZE_ROW; i++) {
             for (int j = 0; j < SIZE_COLUMN; j++) {
@@ -111,16 +151,33 @@ public class Sudoku {
         return true;
     }
     
+    /**
+     * This function is the main solving function for the board.
+     * 
+     * @param void
+     * 
+     * @return void
+     */ 
     public void solve() {
         while (!isSolved() && (nakedSingles() || hiddenSingles()));
     }
     
+    /**
+     * This function will determine the number of naked singles present in a board. The function will
+     * scan the whole 9x9 board and determine whether the number is a naked single or not based on the
+     * number of candidates. The function will return 'true' if a naked single is found and a change is made
+     * to the board.
+     * 
+     * @param void
+     * 
+     * @return boolean
+     */ 
     public boolean nakedSingles() {
-        int[][] copy = board();
-        boolean[] test;
-        int count;
-        int number = 0;
-        boolean status = false;
+        boolean[] test;             //Stores the candidate values of a particular cell.
+        boolean status = false;     //Stores the final status of nakedSingles().
+        int count;                  //Stores the number of counts of 'true' values to determine naked single(s).
+        int number = 0;             //Stores the possible value of naked single.
+        int[][] copy = board();     //Stores the copy of the board.
         
         for (int i = 0; i < SIZE_ROW; i++) {
             for (int j = 0; j < SIZE_COLUMN; j++) {
@@ -141,35 +198,43 @@ public class Sudoku {
                     if (count == 1) {
                         boardCopy[i][j] = number;
                         status = true;
-                        //return true;
                     }
                 }
             }
         }
         return status;
-        //return false;
     }
     
+    /**
+     * This function will determine the hidden singles in a board based on the number of unique candidates present
+     * within the board. The function will return true if there is a hidden single and a change is made to the board.
+     * 
+     * @param void
+     * 
+     * @return boolean
+     */ 
     public boolean hiddenSingles() {
-        int[][] copy = board();
-        boolean[] test;     //Stores the candidate value for the cell
-        int count = 0;
+        int[][] copy = board();   //Stores the copy of the board.
+        boolean[] test;           //Stores the candidate value for the cell.
+        int count = 0;            //Stores the number of candidates for determining hidden singles.
+        boolean status = false;   //Stores the final status for hiddenSingles().
+        
         //For testing hidden singles
         boolean test1; //Hatchet/box
         boolean test2; //Row
         boolean test3; //Column
+        
         //For checking box
-        int rowNum;
-        int colNum;
-        boolean status = false;
+        int rowNum;               //Stores the modified row coordinates of the cell.
+        int colNum;               //Stores the modified column coordinates of the cell.
         
         for (int i = 0; i < SIZE_ROW; i++) {
             for (int j = 0; j < SIZE_COLUMN; j++) {
-                //Start test if the designated cell is 0 (i.e. empty)
+                //Start test if the designated cell is 0 (i.e. empty).
                 if (copy[i][j] == 0) {
-                    //Prepare candidates
+                    //Prepare candidates.
                     test = candidates(i, j);
-                    //Test for each number candidate
+                    //Test for each number candidate.
                     for (int x = 0; x < test.length; x++) {
                         if (test[x] == true) {
                             //Fill/reset test status to false.
@@ -178,7 +243,7 @@ public class Sudoku {
                             test3 = false; //Column
 
                             //--->Test #1. Checking box. Alternative of hatchet method
-                            count = 0;      // Reset counter
+                            count = 0;      // Reset counter.
                             rowNum = i / 3 * 3;
                             colNum = j / 3 * 3;
                             for (int m = 0; m < 3; m++) {
@@ -195,7 +260,7 @@ public class Sudoku {
 
                             //--->Test #2
                             //Check the candidate of every cells in the same row that has candidate 'x'.
-                            count = 0;      // Reset counter
+                            count = 0;      // Reset counter.
                             for (int m = 0; m < SIZE_ROW; m++) {
                                 if (candidates(i, m)[x] == true) {
                                     count++;
@@ -210,7 +275,7 @@ public class Sudoku {
                             
                             //--->Test #3
                             //Check the candidate of every cells in the same column that has candidate 'x'.
-                            count = 0;      // Reset counter
+                            count = 0;      // Reset counter.
                             for (int m = 0; m < SIZE_COLUMN; m++) {
                                 if (candidates(m, j)[x] == true) {
                                     count++;
@@ -222,20 +287,27 @@ public class Sudoku {
                                 test3 = true;
                             }
                             
-                            //Apply the number. If the cell has number already, don't implement
-                            if (test1 || test2 || test3) { //&& boardStatus[i % 3][j % 3] == true) {
+                            //Apply the number. If the cell has number already, don't implement.
+                            if (test1 || test2 || test3) { 
                                 boardCopy[i][j] = x;
                                 status = true;
                                 break;
                             }
-                        } //End of test condition
-                    } // End of test loop
+                        } //End of test condition.
+                    } // End of test loop.
                 }
-            } // End of j
-        } // End of i
+            } // End of j.
+        } // End of i.
         return status;
     }
-        
+    
+    /**
+     * This function will help initializing Sudoku board from user input via CLI.
+     * 
+     * @param String args - user input of string arguments.
+     * 
+     * @return int[][]
+     */ 
     public static int[][] initializeFromCLI(String args) {
         int k = 0;
         int sudoku[][] = new int[9][9];
@@ -247,7 +319,14 @@ public class Sudoku {
         }
         return sudoku;
     }
-
+    
+    /**
+     * This function will return the solved board in form of a String.
+     * 
+     * @param void
+     * 
+     * @return String
+     */ 
     public String getBoard() {
         String s = "";
         int[][] result = new int[9][9];
@@ -260,6 +339,14 @@ public class Sudoku {
         return s;
     }
     
+    /**
+     * This function will print the board to the CLI so that the user can see the final, solved
+     * state of the board.
+     * 
+     * @param void
+     * 
+     * @return void
+     */ 
     public void printBoard() {
         int[][] result = new int[9][9];
         result = board();
